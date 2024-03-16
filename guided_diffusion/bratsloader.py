@@ -59,10 +59,10 @@ class BRATSDataset(torch.utils.data.Dataset):
 
         # split the complete database into splits
         split = make_split()  # train, validation test
+        print(f'split = {split}')
         for filedict in self.database:
             # datapoint
-            print(f'filedict = {filedict}')
-            number = int(filedict['t1'].split('/')[-2])
+            number = int(filedict['t1.nii'].split('/')[-2]) # 1
             for mode, numbers in split.items():
                 if number in numbers:
                     self.database_dict[mode].append(filedict)
