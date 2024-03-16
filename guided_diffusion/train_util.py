@@ -1,13 +1,11 @@
 import functools
 import os
-
 import blobfile as bf
 import torch as th
 import torch.distributed as dist
 import torch.utils.tensorboard
 from torch.optim import AdamW
 import torch.cuda.amp as amp
-
 from . import dist_util, logger
 from .resample import LossAwareSampler, UniformSampler
 
@@ -20,30 +18,11 @@ def visualize(img):
     return normalized_img
 
 class TrainLoop:
-    def __init__(
-        self,
-        *,
-        model,
-        diffusion,
-        data,
-        batch_size,
-        in_channels,
-        image_size,
-        microbatch,
-        lr,
-        ema_rate,
-        log_interval,
-        save_interval,
-        resume_checkpoint,
-        use_fp16=False,
-        fp16_scale_growth=1e-3,
-        schedule_sampler=None,
-        weight_decay=0.0,
-        lr_anneal_steps=0,
-        dataset='brats',
-        summary_writer=None,
-        mode='default',
-    ):
+    def __init__(self,*,model,diffusion,data,batch_size,in_channels, ### 8
+                 image_size,
+                 microbatch,lr,ema_rate,log_interval,save_interval,resume_checkpoint,
+                 use_fp16=False,fp16_scale_growth=1e-3,schedule_sampler=None,weight_decay=0.0,
+                 lr_anneal_steps=0,dataset='brats',summary_writer=None,mode='default',):
         self.summary_writer = summary_writer
         self.mode = mode
         self.model = model
@@ -56,11 +35,7 @@ class TrainLoop:
         self.image_size = image_size
         self.microbatch = microbatch if microbatch > 0 else batch_size
         self.lr = lr
-        self.ema_rate = (
-            [ema_rate]
-            if isinstance(ema_rate, float)
-            else [float(x) for x in ema_rate.split(",")]
-        )
+        self.ema_rate = ([ema_rate] if isinstance(ema_rate, float) else [float(x) for x in ema_rate.split(",")])
         self.log_interval = log_interval
         self.save_interval = save_interval
         self.resume_checkpoint = resume_checkpoint
@@ -69,27 +44,19 @@ class TrainLoop:
             self.grad_scaler = amp.GradScaler()
         else:
             self.grad_scaler = amp.GradScaler(enabled=False)
-
         self.schedule_sampler = schedule_sampler or UniformSampler(diffusion)
         self.weight_decay = weight_decay
         self.lr_anneal_steps = lr_anneal_steps
-
         self.step = 1
         self.resume_step = 0
         self.global_batch = self.batch_size * dist.get_world_size()
-
         self.sync_cuda = th.cuda.is_available()
-
         self._load_and_sync_parameters()
-
         self.opt = AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         if self.resume_step:
             self._load_optimizer_state()
-
         if not th.cuda.is_available():
-            logger.warn(
-                "Training requires CUDA. "
-            )
+            logger.warn("Training requires CUDA. ")
 
     def _load_and_sync_parameters(self):
         resume_checkpoint = find_resume_checkpoint() or self.resume_checkpoint
@@ -126,13 +93,11 @@ class TrainLoop:
         i = 0
         import time
         t = time.time()
-        while ( not self.lr_anneal_steps or self.step + self.resume_step < self.lr_anneal_steps ):
+        while (not self.lr_anneal_steps or self.step + self.resume_step < self.lr_anneal_steps):
             print(f'last iteration duration: {(t_total := time.time() - t)}')
             t = time.time()
-            # ------------------------------------------------------------------------------------ #
             if self.dataset in ['brats', 'brats3d']:
-                # ------------------------------------------------------------------------------------ #
-                try:
+                try: # dataloader
                     batch, cond, weak_label, label, _ = next(self.iterdatal)
                 except StopIteration:
                     self.iterdatal = iter(self.datal)
@@ -140,18 +105,12 @@ class TrainLoop:
             elif self.dataset=='chexpert':
                 batch, cond = next(self.datal)
                 cond.pop("path", None)
-
-            # ------------------------------------------------------------------------------------ #
-            # only use the first few channels as defined by self.in_channels
-            img_channel = batch.shape[1] # 7
             if batch.shape[1] > self.in_channels:
                 batch = batch[:, :self.in_channels, ...]
             t_fwd = time.time()
             print(f'time for loading: {(t_load := t_fwd-t)}')
-
             info = dict()
             if self.mode == 'segmentation':
-                # just vlb loss ?
                 lossmse, sample = self.run_step(batch, cond=dict(), label=label, info=info)
             else:
                 lossmse, sample = self.run_step(batch, cond)
