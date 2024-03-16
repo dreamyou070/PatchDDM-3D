@@ -1075,24 +1075,19 @@ class GaussianDiffusion:
         elif mode == 'segmentation':
             # Here
             image_channels = model.model.in_channels - model.model.out_channels # 7
-            print(f'image_channels (7) = {image_channels}')
             x_start = torch.cat([x_start, labels], dim=1) # channel = 8
-            print(f'x_start (1,8,128,128,128) = {x_start.shape}')
-            res = labels
-            # labels/noise are appended to the BACK of the MRI scans
+            res = labels # [1,1,128,128,128]
             if noise is None:
                 noise = th.randn_like(res)
             res_t = self.q_sample(res, t, noise=noise)
-
             x_t = x_start.clone()
             x_t[:, image_channels:, ...] = res_t
-
             x_t = x_t.float()
-            print('inputxt', x_t.shape)
         else:
             raise ValueError(f'invalid mode {mode=}, needs to be "default" or "segmentation"')
 
         terms = {}
+
         if self.loss_type == LossType.KL or self.loss_type == LossType.RESCALED_KL:
             terms["loss"] = self._vb_terms_bpd(
                 model=model,
@@ -1100,10 +1095,10 @@ class GaussianDiffusion:
                 x_t=x_t,
                 t=t,
                 clip_denoised=False,
-                model_kwargs=model_kwargs,
-            )["output"]
+                model_kwargs=model_kwargs,)["output"]
             if self.loss_type == LossType.RESCALED_KL:
                 terms["loss"] *= self.num_timesteps
+
         elif self.loss_type == LossType.MSE or self.loss_type == LossType.RESCALED_MSE:
             model_output = model(x_t, self._scale_timesteps(t), **model_kwargs)
 
@@ -1152,6 +1147,7 @@ class GaussianDiffusion:
                 terms["loss"] = terms["mse"] + terms["vb"]
             else:
                 terms["loss"] = terms["mse"]
+
         else:
             raise NotImplementedError(self.loss_type)
 
