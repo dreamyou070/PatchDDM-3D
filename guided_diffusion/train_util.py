@@ -151,16 +151,11 @@ class TrainLoop:
 
             info = dict()
             if self.mode == 'segmentation':
-                # ----------------------------------------------------------------------------
-                lossmse, sample = self.run_step(batch,
-                                                cond=dict(),
-                                                label=label,
-                                                info=info)
+                # just vlb loss ?
+                lossmse, sample = self.run_step(batch, cond=dict(), label=label, info=info)
             else:
                 lossmse, sample = self.run_step(batch, cond)
             print(f'time for step: {(t_fwd := time.time()-t_fwd)}')
-
-
             if self.summary_writer is not None:
                 self.summary_writer.add_scalar('time/load', t_load, global_step=self.step + self.resume_step)
                 self.summary_writer.add_scalar('time/fwd', t_fwd, global_step=self.step + self.resume_step)
@@ -168,11 +163,10 @@ class TrainLoop:
                 self.summary_writer.add_scalar('lossmse', lossmse.item(), global_step=self.step + self.resume_step)
                 for k, v in info.items():
                     self.summary_writer.add_scalar(k, v, global_step=self.step + self.resume_step)
-
-
             if self.step % self.log_interval == 0:
                 logger.dumpkvs()
             if self.step % self.save_interval == 0:
+                # saving model
                 self.save()
                 # Run for a finite amount of time in integration tests.
                 if os.environ.get("DIFFUSION_TRAINING_TEST", "") and self.step > 0:
@@ -190,7 +184,6 @@ class TrainLoop:
 
         # ------------------------------------------------------------------------------------------ #
         lossmse,  sample = self.forward_backward(batch, cond, label)
-
 
         if self.use_fp16:
             self.grad_scaler.unscale_(self.opt) # check self.grad_scaler._per_optimizer_states
@@ -259,28 +252,20 @@ class TrainLoop:
             # sampling
             # timestep, weights = 1
             t, weights = self.schedule_sampler.sample(micro.shape[0], dist_util.dev())
-
             compute_losses = functools.partial(self.diffusion.training_losses, # main function
                    # arguments
                    self.model,  x_start=micro, t=t, model_kwargs=micro_cond,  labels=micro_label, mode=self.mode)
 
+            # mse loss (generating?)
             with amp.autocast(enabled=self.use_fp16):
                 losses1 = compute_losses()
-
                 if isinstance(self.schedule_sampler, LossAwareSampler):
-                    self.schedule_sampler.update_with_local_losses(
-                        t, losses1["loss"].detach()
-                    )
-                losses = losses1[0]
-                sample = losses1[1]
-
+                    self.schedule_sampler.update_with_local_losses(t, losses1["loss"].detach())
+                losses = losses1[0] # terms
+                sample = losses1[1] # model_output
                 loss = (losses["loss"] * weights).mean()
-
                 lossmse = (losses["mse"] * weights).mean().detach()
-           
-            log_loss_dict(
-                self.diffusion, t, {k: v * weights for k, v in losses.items()}
-            )
+            log_loss_dict( self.diffusion, t, {k: v * weights for k, v in losses.items()} )
             # perform some finiteness checks
             if not torch.isfinite(loss):
                 logger.log(f"Encountered non-finite loss {loss}")
