@@ -88,133 +88,106 @@ def classifier_and_diffusion_defaults():
 
 
 def create_model_and_diffusion(
-    image_size,
-    class_cond,
-    learn_sigma,
-    num_channels,
-    num_res_blocks,
-    channel_mult,
-    num_heads,
-    num_head_channels,
-    num_heads_upsample,
-    attention_resolutions,
-    dropout,
-    diffusion_steps,
-    noise_schedule,
-    timestep_respacing,
-    use_kl,
-    predict_xstart,
-    rescale_timesteps,
-    rescale_learned_sigmas,
-    use_checkpoint,
-    use_scale_shift_norm,
-    resblock_updown,
-    use_fp16,
-    use_new_attention_order,
-    dataset,
-    dims,
-    num_groups,
-    in_channels,
-    out_channels,
-    bottleneck_attention,
-    resample_2d,
-    additive_skips,
-    decoder_device_thresh,
-    mode,
-):
-    print('timestepresp1',timestep_respacing )
-    # channels do    match: ch= 116, ich= 116, level=6, i=0
-    #  channels do    match: ch= 116, ich= 116, level=6, i=1
-    #  channels do    match: ch= 116, ich= 116, level=6, i=2
-    #  channels do    match: ch= 116, ich= 116, level=5, i=0
-    #  channels do    match: ch= 116, ich= 116, level=5, i=1
-    #  channels do    match: ch= 116, ich= 116, level=5, i=2
-    #  channels do    match: ch= 116, ich= 116, level=4, i=0
-    #  channels do    match: ch= 116, ich= 116, level=4, i=1
-    #  channels do    match: ch= 116, ich= 116, level=4, i=2
-    #  channels do    match: ch= 116, ich= 116, level=3, i=0
-    #  channels do    match: ch= 116, ich= 116, level=3, i=1
-    #  channels do    match: ch= 116, ich= 116, level=3, i=2
-    #  channels do    match: ch= 116, ich= 116, level=2, i=0
-    #  channels do    match: ch= 116, ich= 116, level=2, i=1
-    #  channels do    match: ch=  87, ich=  87, level=2, i=2
-    #  channels do    match: ch=  87, ich=  87, level=1, i=0
-    #  channels do    match: ch=  87, ich=  87, level=1, i=1
-    #  channels do    match: ch=  29, ich=  29, level=1, i=2
-    #  channels do    match: ch=  29, ich=  29, level=0, i=0
-    #  channels do    match: ch=  29, ich=  29, level=0, i=1
-    #  channels do    match: ch=  29, ich=  29, level=0, i=2
-
-    """ Unet Model """
-    model = create_model(
         image_size,
+        class_cond,
+        learn_sigma,
         num_channels,
         num_res_blocks,
-        channel_mult=channel_mult,
-        learn_sigma=learn_sigma,
-        class_cond=class_cond,
-        use_checkpoint=use_checkpoint,
-        attention_resolutions=attention_resolutions,
-        num_heads=num_heads,
-        num_head_channels=num_head_channels,
-        num_heads_upsample=num_heads_upsample,
-        use_scale_shift_norm=use_scale_shift_norm,
-        dropout=dropout,
-        resblock_updown=resblock_updown,
-        use_fp16=use_fp16,
-        use_new_attention_order=use_new_attention_order,
-        dataset=dataset,
-        dims=dims,
-        num_groups=num_groups,
-        in_channels=in_channels,
-        out_channels=out_channels,
-        bottleneck_attention=bottleneck_attention,
-        resample_2d=resample_2d,
-        additive_skips=additive_skips,
-        decoder_device_thresh=decoder_device_thresh,
-    )
-    """ Diffusion Inferer """
+        channel_mult,
+        num_heads,
+        num_head_channels,
+        num_heads_upsample,
+        attention_resolutions,
+        dropout,
+        diffusion_steps,
+        noise_schedule,
+        timestep_respacing,
+        use_kl,
+        predict_xstart,
+        rescale_timesteps,
+        rescale_learned_sigmas,
+        use_checkpoint,
+        use_scale_shift_norm,
+        resblock_updown,
+        use_fp16,
+        use_new_attention_order,
+        dataset,
+        dims,
+        num_groups,
+        in_channels,
+        out_channels,
+        bottleneck_attention,
+        resample_2d,
+        additive_skips,
+        decoder_device_thresh,
+        mode,
+):
+    print(f' (2.1) Unet Model')
+    model = create_model(image_size,
+                         num_channels,
+                         num_res_blocks,
+                         channel_mult=channel_mult,
+                         learn_sigma=learn_sigma,
+                         class_cond=class_cond,
+                         use_checkpoint=use_checkpoint,
+                         attention_resolutions=attention_resolutions,
+                         num_heads=num_heads,
+                         num_head_channels=num_head_channels,
+                         num_heads_upsample=num_heads_upsample,
+                         use_scale_shift_norm=use_scale_shift_norm,
+                         dropout=dropout,
+                         resblock_updown=resblock_updown,
+                         use_fp16=use_fp16,
+                         use_new_attention_order=use_new_attention_order,
+                         dataset=dataset,
+                         dims=dims,
+                         num_groups=num_groups,
+                         in_channels=in_channels,
+                         out_channels=out_channels,
+                         bottleneck_attention=bottleneck_attention,
+                         resample_2d=resample_2d,
+                         additive_skips=additive_skips,
+                         decoder_device_thresh=decoder_device_thresh,)
+    print(f' (2.2) diffuser')
     diffusion = create_gaussian_diffusion(steps=diffusion_steps,
-        learn_sigma=learn_sigma,
-        noise_schedule=noise_schedule,
-        use_kl=use_kl,
-        predict_xstart=predict_xstart,
-        rescale_timesteps=rescale_timesteps,
-        rescale_learned_sigmas=rescale_learned_sigmas,
-        timestep_respacing=timestep_respacing,
-        mode=mode,
-    )
+                                          learn_sigma=learn_sigma,
+                                          noise_schedule=noise_schedule,
+                                          use_kl=use_kl,
+                                          predict_xstart=predict_xstart,
+                                          rescale_timesteps=rescale_timesteps,
+                                          rescale_learned_sigmas=rescale_learned_sigmas,
+                                          timestep_respacing=timestep_respacing,
+                                          mode=mode,)
     return model, diffusion
 
 
 def create_model(
-    image_size,
-    num_channels,
-    num_res_blocks,
-    channel_mult="",
-    learn_sigma=False,
-    class_cond=False,
-    use_checkpoint=False,
-    attention_resolutions="16",
-    num_heads=1,
-    num_head_channels=-1,
-    num_heads_upsample=-1,
-    use_scale_shift_norm=False,
-    dropout=0,
-    resblock_updown=False,
-    use_fp16=False,
-    use_new_attention_order=False,
-    dataset='brats',
-    num_groups=32,
-    dims=2,
-    in_channels=1,
-    out_channels=0, # automatically determine if 0
-    bottleneck_attention=True,
-    resample_2d=True,
-    additive_skips=False,
-    decoder_device_thresh=0,
+        image_size,
+        num_channels,
+        num_res_blocks,
+        channel_mult="",
+        learn_sigma=False,
+        class_cond=False,
+        use_checkpoint=False,
+        attention_resolutions="16",
+        num_heads=1,
+        num_head_channels=-1,
+        num_heads_upsample=-1,
+        use_scale_shift_norm=False,
+        dropout=0,
+        resblock_updown=False,
+        use_fp16=False,
+        use_new_attention_order=False,
+        dataset='brats',
+        num_groups=32,
+        dims=2,
+        in_channels=1,
+        out_channels=0,  # automatically determine if 0
+        bottleneck_attention=True,
+        resample_2d=True,
+        additive_skips=False,
+        decoder_device_thresh=0,
 ):
-    """ create Unet Model """
     if not channel_mult:
         if image_size == 512:
             channel_mult = (1, 1, 2, 2, 4, 4)
@@ -227,35 +200,33 @@ def create_model(
         else:
             raise ValueError(f"unsupported image size: {image_size}")
     else:
-        ######################################
         if isinstance(channel_mult, str):
-            #channel_mult = tuple(int(ch_mult) for ch_mult in channel_mult.split(","))
+            # channel_mult = tuple(int(ch_mult) for ch_mult in channel_mult.split(","))
             from ast import literal_eval
-            channel_mult = literal_eval(channel_mult) # 1,3,4,4,4,4,4
+            channel_mult = literal_eval(channel_mult)
         elif isinstance(channel_mult, tuple):  # do nothing
             pass
         else:
             raise ValueError(f"value for {channel_mult=} not supported")
+
     attention_ds = []
     if attention_resolutions:
         for res in attention_resolutions.split(","):
-            # 16
-            # 128 / 16 = 8
             attention_ds.append(image_size // int(res))
-        
-    #if dataset=='brats':
+
+    # if dataset=='brats':
     #  number_in_channels=4
-    #else:
+    # else:
     #  number_in_channels=1
-    #print('numberinchannels', number_in_channels)
+    # print('numberinchannels', number_in_channels)
     if out_channels == 0:
-        out_channels =(2*in_channels if learn_sigma else in_channels)
+        out_channels = (2 * in_channels if learn_sigma else in_channels)
 
     return UNetModel(
         image_size=image_size,
         in_channels=in_channels,
         model_channels=num_channels,
-        out_channels=out_channels * (1 if not learn_sigma else 2),  #12,#(3 if not learn_sigma else 6),
+        out_channels=out_channels * (1 if not learn_sigma else 2),  # 12,#(3 if not learn_sigma else 6),
         num_res_blocks=num_res_blocks,
         attention_resolutions=tuple(attention_ds),
         dropout=dropout,
@@ -279,28 +250,28 @@ def create_model(
 
 
 def create_classifier_and_diffusion(
-    image_size,
-    classifier_use_fp16,
-    classifier_width,
-    classifier_depth,
-    classifier_attention_resolutions,
-    classifier_num_head_channels,
-    classifier_use_scale_shift_norm,
-    classifier_resblock_updown,
-    classifier_pool,
-    classifier_channel_mult,
-    learn_sigma,
-    diffusion_steps,
-    noise_schedule,
-    timestep_respacing,
-    use_kl,
-    predict_xstart,
-    rescale_timesteps,
-    rescale_learned_sigmas,
-    dataset,
-    dims,
-    num_groups,
-    in_channels,
+        image_size,
+        classifier_use_fp16,
+        classifier_width,
+        classifier_depth,
+        classifier_attention_resolutions,
+        classifier_num_head_channels,
+        classifier_use_scale_shift_norm,
+        classifier_resblock_updown,
+        classifier_pool,
+        classifier_channel_mult,
+        learn_sigma,
+        diffusion_steps,
+        noise_schedule,
+        timestep_respacing,
+        use_kl,
+        predict_xstart,
+        rescale_timesteps,
+        rescale_learned_sigmas,
+        dataset,
+        dims,
+        num_groups,
+        in_channels,
 ):
     print('timestepresp2', timestep_respacing)
     classifier = create_classifier(
@@ -333,20 +304,20 @@ def create_classifier_and_diffusion(
 
 
 def create_classifier(
-    image_size,
-    classifier_use_fp16,
-    classifier_width,
-    classifier_depth,
-    classifier_attention_resolutions,
-    classifier_use_scale_shift_norm,
-    classifier_resblock_updown,
-    classifier_pool,
-    dataset,
-    num_groups=32,
-    dims=2,
-    in_channels=1,
-    num_head_channels=64,
-    classifier_channel_mult="",
+        image_size,
+        classifier_use_fp16,
+        classifier_width,
+        classifier_depth,
+        classifier_attention_resolutions,
+        classifier_use_scale_shift_norm,
+        classifier_resblock_updown,
+        classifier_pool,
+        dataset,
+        num_groups=32,
+        dims=2,
+        in_channels=1,
+        num_head_channels=64,
+        classifier_channel_mult="",
 ):
     channel_mult = classifier_channel_mult
     if not channel_mult:
@@ -360,7 +331,7 @@ def create_classifier(
             raise ValueError(f"unsupported image size: {image_size}")
     else:
         if isinstance(channel_mult, str):
-            #channel_mult = tuple(int(ch_mult) for ch_mult in channel_mult.split(","))
+            # channel_mult = tuple(int(ch_mult) for ch_mult in channel_mult.split(","))
             from ast import literal_eval
             channel_mult = literal_eval(channel_mult)
         elif isinstance(channel_mult, tuple):  # do nothing
@@ -374,7 +345,6 @@ def create_classifier(
             attention_ds.append(image_size // int(res))
 
     print('number_in_channels classifier', in_channels)
-      
 
     return EncoderUNetModel(
         image_size=image_size,
@@ -406,28 +376,28 @@ def sr_model_and_diffusion_defaults():
 
 
 def sr_create_model_and_diffusion(
-    large_size,
-    small_size,
-    class_cond,
-    learn_sigma,
-    num_channels,
-    num_res_blocks,
-    num_heads,
-    num_head_channels,
-    num_heads_upsample,
-    attention_resolutions,
-    dropout,
-    diffusion_steps,
-    noise_schedule,
-    timestep_respacing,
-    use_kl,
-    predict_xstart,
-    rescale_timesteps,
-    rescale_learned_sigmas,
-    use_checkpoint,
-    use_scale_shift_norm,
-    resblock_updown,
-    use_fp16,
+        large_size,
+        small_size,
+        class_cond,
+        learn_sigma,
+        num_channels,
+        num_res_blocks,
+        num_heads,
+        num_head_channels,
+        num_heads_upsample,
+        attention_resolutions,
+        dropout,
+        diffusion_steps,
+        noise_schedule,
+        timestep_respacing,
+        use_kl,
+        predict_xstart,
+        rescale_timesteps,
+        rescale_learned_sigmas,
+        use_checkpoint,
+        use_scale_shift_norm,
+        resblock_updown,
+        use_fp16,
 ):
     print('timestepresp3', timestep_respacing)
     model = sr_create_model(
@@ -461,21 +431,21 @@ def sr_create_model_and_diffusion(
 
 
 def sr_create_model(
-    large_size,
-    small_size,
-    num_channels,
-    num_res_blocks,
-    learn_sigma,
-    class_cond,
-    use_checkpoint,
-    attention_resolutions,
-    num_heads,
-    num_head_channels,
-    num_heads_upsample,
-    use_scale_shift_norm,
-    dropout,
-    resblock_updown,
-    use_fp16,
+        large_size,
+        small_size,
+        num_channels,
+        num_res_blocks,
+        learn_sigma,
+        class_cond,
+        use_checkpoint,
+        attention_resolutions,
+        num_heads,
+        num_head_channels,
+        num_heads_upsample,
+        use_scale_shift_norm,
+        dropout,
+        resblock_updown,
+        use_fp16,
 ):
     _ = small_size  # hack to prevent unused variable
 
@@ -513,46 +483,43 @@ def sr_create_model(
 
 
 def create_gaussian_diffusion(
-    *,
-    steps=1000,
-    learn_sigma=False,
-    sigma_small=False,
-    noise_schedule="linear",
-    use_kl=False,
-    predict_xstart=False,
-    rescale_timesteps=False,
-    rescale_learned_sigmas=False,
-    timestep_respacing="",
-    mode='default',
-):
+        *,
+        steps=1000,
+        learn_sigma=False,
+        sigma_small=False,
+        noise_schedule="linear",
+        use_kl=False,
+        predict_xstart=False,
+        rescale_timesteps=False,
+        rescale_learned_sigmas=False,
+        timestep_respacing="",
+        mode='default',):
+    print(f' (1) betas')
     betas = gd.get_named_beta_schedule(noise_schedule, steps)
-    # --------------------------------------------------------------------------------------------
+    print(f' (2) loss type')
     if use_kl:
         loss_type = gd.LossType.RESCALED_KL
     elif rescale_learned_sigmas:
         loss_type = gd.LossType.RESCALED_MSE
     else:
-        loss_type = gd.LossType.MSE # -------------------------------------------------------------
-    print(f'loss_type = {loss_type}')
-    # --------------------------------------------------------------------------------------------
-
-
-
+        loss_type = gd.LossType.MSE
     if not timestep_respacing:
         timestep_respacing = [steps]
 
-    print('steps', steps, timestep_respacing)
+    model_mean_type = (gd.ModelMeanType.EPSILON if not predict_xstart else gd.ModelMeanType.START_X)
+    print(f'model_mean_type = {model_mean_type}')
+    model_var_type = ((gd.ModelVarType.FIXED_LARGE if not sigma_small else gd.ModelVarType.FIXED_SMALL)
+                      if not learn_sigma else gd.ModelVarType.LEARNED_RANGE)
+    print(f'model_var_type = {model_var_type}')
+    print(f'mode = {mode}')
     return SpacedDiffusion(use_timesteps=space_timesteps(steps, timestep_respacing),
                            betas=betas,
                            model_mean_type=(gd.ModelMeanType.EPSILON if not predict_xstart else gd.ModelMeanType.START_X),
-                           # Fixed Small or Large
-                           model_var_type=((gd.ModelVarType.FIXED_LARGE if not sigma_small else gd.ModelVarType.FIXED_SMALL )
-                                           if not learn_sigma
-                                           else gd.ModelVarType.LEARNED_RANGE),
-        loss_type=loss_type,
-        rescale_timesteps=rescale_timesteps,
-        mode=mode,
-    )
+                           model_var_type=((gd.ModelVarType.FIXED_LARGE if not sigma_small else gd.ModelVarType.FIXED_SMALL)
+                                           if not learn_sigma else gd.ModelVarType.LEARNED_RANGE),
+                           loss_type=loss_type,
+                           rescale_timesteps=rescale_timesteps,
+                           mode=mode,)
 
 
 def add_dict_to_argparser(parser, default_dict):

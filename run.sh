@@ -11,7 +11,6 @@ ITERATIONS=001;  # training iteration (as amultiple of 1k) checkpoint to use for
 SAMPLING_STEPS=0;# number of steps for accelerated sampling, 0 for the default 1000
 RUN_DIR="MonXX_HH-MM-SS_HOSTNAME"; # tensorboard dir to be set for the evaluation
 
-
 # detailed settings (no need to change for reproducing)
 if [[ $MODEL == 'patchddm' ]]; then
   # Here
@@ -41,7 +40,7 @@ fi
 
 COMMON="
 --dataset=brats3d
---num_channels=${CHANNELS}
+--num_channels=${CHANNELS} # 29
 --class_cond=False
 --num_res_blocks=2
 --num_heads=1
