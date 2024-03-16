@@ -129,7 +129,9 @@ class TrainLoop:
         while ( not self.lr_anneal_steps or self.step + self.resume_step < self.lr_anneal_steps ):
             print(f'last iteration duration: {(t_total := time.time() - t)}')
             t = time.time()
+            # ------------------------------------------------------------------------------------ #
             if self.dataset in ['brats', 'brats3d']:
+                # ------------------------------------------------------------------------------------ #
                 try:
                     batch, cond, weak_label, label, _ = next(self.iterdatal)
                 except StopIteration:
@@ -139,7 +141,10 @@ class TrainLoop:
                 batch, cond = next(self.datal)
                 cond.pop("path", None)
 
+            # ------------------------------------------------------------------------------------ #
             # only use the first few channels as defined by self.in_channels
+            img_channel = batch.shape[1]
+            print(f'img_channel (7) = {img_channel} | self.in_channels (8) = {self.in_channels}')
             if batch.shape[1] > self.in_channels:
                 batch = batch[:, :self.in_channels, ...]
             t_fwd = time.time()

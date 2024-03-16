@@ -70,12 +70,13 @@ def main():
                                          num_workers=args.num_workers,
                                          shuffle=True)
     print(f' step 4. training...')
+    print(f'args.in_channels = 8 (means img + output)')
     TrainLoop(
         model=model,
         diffusion=diffusion,
         data=datal,
         batch_size=args.batch_size,
-        in_channels=args.in_channels,
+        in_channels=args.in_channels, # 7 ?
         image_size=args.image_size,
         microbatch=args.microbatch,
         lr=args.lr,

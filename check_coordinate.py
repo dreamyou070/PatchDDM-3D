@@ -1,16 +1,11 @@
 import torch
+import numpy as np
 
-dim = 3
-axis_grid = torch.linspace(-1, 1, 256)
-total_axis_grid = dim * [axis_grid,]
-# repeat three time
-meshgrid = torch.meshgrid(total_axis_grid, indexing='ij') # 256,256,256
-print(meshgrid[0].shape)
-print(meshgrid[1].shape)
-print(meshgrid[2].shape)
-coord_cache = torch.stack(meshgrid,
-                          dim=0)
-
-image = torch.randn(4,256,256,256)
-image = torch.cat([image, coord_cache], dim=0) # [4,256,256,256] -> [2,5,256,256,256]
-print(f'image = {image.shape}')
+# get random 3 random number
+shape = 3
+first_coords = np.random.randint(0, 32+1, shape) + np.random.randint(0, 64+32+1, shape)
+index = tuple([slice(None), *(slice(f, f+128) for f in first_coords      )])
+print(index)
+#for f in first_coords :
+#    s = *slice(f, f + 128)
+#    print(s)

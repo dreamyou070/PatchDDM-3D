@@ -81,6 +81,9 @@ class BRATSDataset(torch.utils.data.Dataset):
         #assert all(not numbers for numbers in split.values()), "not all numbers were distributed"
         self.database_dict['legacy'] = self.database
 
+    def __len__(self):
+        return len(self.database_dict[self.mode])
+
     def __getitem__(self, x):
         # ------------------------------------------------------------------------------------------------ #
         out = []
@@ -160,12 +163,10 @@ class BRATSDataset(torch.utils.data.Dataset):
 
         # --------------------------------------------------------------------------------------------------
         # half crop: crop to a 128x128[x128] image,
-        print(f'self.random_half_crop = {self.random_half_crop}')
         if self.random_half_crop:
-
-            shape = (len(image.shape)-1,)
-            print(f'shape (3) = {shape}')
+            shape = (len(image.shape)-1,) # 3
             first_coords = np.random.randint(0, 32+1, shape) + np.random.randint(0, 64+32+1, shape)
+            # half size = 128
             index = tuple([slice(None), *(slice(f, f+128) for f in first_coords)])
             image = image[index]
             label = label[index]
@@ -181,10 +182,13 @@ class BRATSDataset(torch.utils.data.Dataset):
             raise ValueError(f'{self.num_classes=} should be in 1 or 4')
 
         out_dict["y"] = weak_label
-        return (image, out_dict, weak_label, label, number )
+        return (image,                      # img [7,256,256,256]
+                out_dict,                   # if there is anomal = 1, else = 0
+                weak_label,                 # if there is anomal = 1, else = 0
+                label,                      # segmentation input
+                number )                    # patient number
 
-    def __len__(self):
-        return len(self.database_dict[self.mode])
+
 
 
 """
