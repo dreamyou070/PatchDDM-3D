@@ -1,11 +1,15 @@
-import torch
+import torch as th
 import numpy as np
 
-# get random 3 random number
-shape = 3
-first_coords = np.random.randint(0, 32+1, shape) + np.random.randint(0, 64+32+1, shape)
-index = tuple([slice(None), *(slice(f, f+128) for f in first_coords      )])
-print(index)
-#for f in first_coords :
-#    s = *slice(f, f + 128)
-#    print(s)
+
+batch_size = 1
+maxt = 1000 # 1000 개의 1
+w = np.ones([maxt])
+p = w / np.sum(w)
+#
+indices_np = np.random.choice(len(p), size=(batch_size,), p=p)
+print(f'indices_np = {indices_np}')
+indices = th.from_numpy(indices_np).long()
+weights_np = 1 / (len(p) * p[indices_np]) # 1
+weights = th.from_numpy(weights_np).float()
+print(weights)

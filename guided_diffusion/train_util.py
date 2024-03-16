@@ -253,14 +253,14 @@ class TrainLoop:
             #print('micro', micro.shape)
             micro_cond = {k: v[i : i + self.microbatch].to(dist_util.dev())
                           for k, v in cond.items()}
-            print(f'micro_cond ()= {micro_cond}')
-       
             last_batch = (i + self.microbatch) >= batch.shape[0]
 
             # ------------------------------------------------------------------------------------------------------
             # sampling
+            # timestep, weights = 1
             t, weights = self.schedule_sampler.sample(micro.shape[0],
                                                       dist_util.dev())
+            print(f' timestep = {t}, weights (1) = {weights}')
 
             compute_losses = functools.partial(self.diffusion.training_losses,
                                                self.model,

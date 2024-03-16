@@ -86,7 +86,7 @@ def main():
         resume_checkpoint=args.resume_checkpoint,
         use_fp16=args.use_fp16,
         fp16_scale_growth=args.fp16_scale_growth,
-        schedule_sampler=schedule_sampler,
+        schedule_sampler=schedule_sampler, # sampler --------------------------------------------------------
         weight_decay=args.weight_decay,
         lr_anneal_steps=args.lr_anneal_steps,
         dataset=args.dataset,
