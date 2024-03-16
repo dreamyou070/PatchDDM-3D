@@ -221,21 +221,19 @@ class TrainLoop:
         return lossmse,  sample
 
     def forward_backward(self, batch, cond, label=None):
+        # cond = dict()
         #self.opt.zero_grad()
         for p in self.model.parameters():
             p.grad = None
         for i in range(0, batch.shape[0], self.microbatch):
             micro = batch[i : i + self.microbatch].to(dist_util.dev())
-            print(f'micro (1,7,256,256,256) = {micro.shape}')
             if label is not None:
                 micro_label = label[i : i + self.microbatch].to(dist_util.dev())
-                print(f'micro_label (1,1,256,256,256) = {micro_label.shape}')
             else:
                 micro_label = None
 
             # ---------------------------------------------------------------------------------------
             # downsample if specified image_size is different from actual image size
-            print(f'self.image_size (128) = {self.image_size}')
             if self.image_size == micro.shape[2]:
                 pass
             elif self.image_size == micro.shape[2] // 2:
@@ -250,28 +248,28 @@ class TrainLoop:
                             micro_label = micro_label[:, :, ::2, ::2, ::2]
                     else:
                         raise ValueError(f"only 2d and 3d tensors are supported, batch has shape {batch.shape}")
-
             else:
                 raise ValueError(f"image_size must match full or half the actual image size")
             #print('micro', micro.shape)
-            micro_cond = {
-                k: v[i : i + self.microbatch].to(dist_util.dev())
-                for k, v in cond.items()
-            }
+            micro_cond = {k: v[i : i + self.microbatch].to(dist_util.dev())
+                          for k, v in cond.items()}
+            print(f'micro_cond ()= {micro_cond}')
        
             last_batch = (i + self.microbatch) >= batch.shape[0]
-            t, weights = self.schedule_sampler.sample(micro.shape[0], dist_util.dev())
 
-            compute_losses = functools.partial(
+            # ------------------------------------------------------------------------------------------------------
+            # sampling
+            t, weights = self.schedule_sampler.sample(micro.shape[0],
+                                                      dist_util.dev())
 
-                self.diffusion.training_losses,
-                self.model,
-                x_start=micro,
-                t=t,
-                model_kwargs=micro_cond,
-                labels=micro_label,
-                mode=self.mode,  # 'default' (image generation) or 'segmentation'
-            )
+            compute_losses = functools.partial(self.diffusion.training_losses,
+                                               self.model,
+                                               x_start=micro,
+                                               t=t,
+                                               model_kwargs=micro_cond,
+                                               labels=micro_label,
+                                               mode=self.mode,  # 'default' (image generation) or 'segmentation'
+                                                )
 
             with amp.autocast(enabled=self.use_fp16):
                 losses1 = compute_losses()
