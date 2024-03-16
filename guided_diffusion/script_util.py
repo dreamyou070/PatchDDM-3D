@@ -494,8 +494,10 @@ def create_gaussian_diffusion(
         rescale_learned_sigmas=False,
         timestep_respacing="",
         mode='default',):
+
     print(f' (1) betas')
     betas = gd.get_named_beta_schedule(noise_schedule, steps)
+
     print(f' (2) loss type')
     if use_kl:
         loss_type = gd.LossType.RESCALED_KL
@@ -508,10 +510,13 @@ def create_gaussian_diffusion(
 
     model_mean_type = (gd.ModelMeanType.EPSILON if not predict_xstart else gd.ModelMeanType.START_X)
     print(f'model_mean_type = {model_mean_type}')
+
     model_var_type = ((gd.ModelVarType.FIXED_LARGE if not sigma_small else gd.ModelVarType.FIXED_SMALL)
                       if not learn_sigma else gd.ModelVarType.LEARNED_RANGE)
     print(f'model_var_type = {model_var_type}')
     print(f'mode = {mode}')
+    use_timesteps = space_timesteps(steps, timestep_respacing)
+    print(f'use_timesteps = {use_timesteps}')
     return SpacedDiffusion(use_timesteps=space_timesteps(steps, timestep_respacing),
                            betas=betas,
                            model_mean_type=(gd.ModelMeanType.EPSILON if not predict_xstart else gd.ModelMeanType.START_X),

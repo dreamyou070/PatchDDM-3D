@@ -1,23 +1,14 @@
-"""
-Train a diffusion model on images.
-"""
 import sys
 import argparse
 import torch as th
-import torch.utils.tensorboard
 import random
-
 sys.path.append("..")
 sys.path.append(".")
 from guided_diffusion.bratsloader import BRATSDataset
 from guided_diffusion import dist_util, logger
 from guided_diffusion.resample import create_named_schedule_sampler
-from guided_diffusion.script_util import (
-    model_and_diffusion_defaults,
-    create_model_and_diffusion,
-    args_to_dict,
-    add_dict_to_argparser,
-)
+from guided_diffusion.script_util import (model_and_diffusion_defaults,create_model_and_diffusion,
+                                          args_to_dict,add_dict_to_argparser,)
 from guided_diffusion.train_util import TrainLoop
 from torch.utils.tensorboard import SummaryWriter
 import numpy as np
@@ -49,16 +40,11 @@ def main(parser):
     model.to(dist_util.dev([0, 1]) if len(args.devices) > 1 else dist_util.dev())  # allow for 2 devices
     schedule_sampler = create_named_schedule_sampler(args.schedule_sampler, diffusion,  maxt=1000)
 
-    logger.log("creating data loader...")
-
+    print(f' step 3. creating data loader...')
     if args.dataset == 'brats':
         ds = BRATSDataset(args.data_dir, test_flag=False)
-        datal = th.utils.data.DataLoader(
-            ds,
-            batch_size=args.batch_size,
-            num_workers=args.num_workers,
-            shuffle=True)
-
+        datal = th.utils.data.DataLoader(ds,batch_size=args.batch_size,
+                                         num_workers=args.num_workers,shuffle=True)
     elif args.dataset == 'brats3d':
         assert args.image_size in [128, 256]
         ds = BRATSDataset(args.data_dir, test_flag=False,
@@ -67,39 +53,30 @@ def main(parser):
                           half_resolution=(args.image_size == 128) and not args.half_res_crop,
                           random_half_crop=(args.image_size == 128) and args.half_res_crop,
                           concat_coords=args.concat_coords,
-                          num_classes=args.out_channels,
-                          )
-        datal = th.utils.data.DataLoader(
-            ds,
-            batch_size=args.batch_size,
-            num_workers=args.num_workers,
-            shuffle=True
-        )
+                          num_classes=args.out_channels,)
+        datal = th.utils.data.DataLoader(ds,batch_size=args.batch_size,num_workers=args.num_workers,shuffle=True)
 
-
-    logger.log("training...")
-    TrainLoop(
-        model=model,
-        diffusion=diffusion,
-        data=datal,
-        batch_size=args.batch_size,
-        in_channels=args.in_channels,
-        image_size=args.image_size,
-        microbatch=args.microbatch,
-        lr=args.lr,
-        ema_rate=args.ema_rate,
-        log_interval=args.log_interval,
-        save_interval=args.save_interval,
-        resume_checkpoint=args.resume_checkpoint,
-        use_fp16=args.use_fp16,
-        fp16_scale_growth=args.fp16_scale_growth,
-        schedule_sampler=schedule_sampler,
-        weight_decay=args.weight_decay,
-        lr_anneal_steps=args.lr_anneal_steps,
-        dataset=args.dataset,
-        summary_writer=summary_writer,
-        mode='segmentation',
-    ).run_loop()
+    print(f' step 4. training...')
+    TrainLoop(model=model,
+              diffusion=diffusion,
+              data=datal,
+              batch_size=args.batch_size,
+              in_channels=args.in_channels,
+              image_size=args.image_size,
+              microbatch=args.microbatch,
+              lr=args.lr,
+              ema_rate=args.ema_rate,
+              log_interval=args.log_interval,
+              save_interval=args.save_interval,
+              resume_checkpoint=args.resume_checkpoint,
+              use_fp16=args.use_fp16,
+              fp16_scale_growth=args.fp16_scale_growth,
+              schedule_sampler=schedule_sampler,
+              weight_decay=args.weight_decay,
+              lr_anneal_steps=args.lr_anneal_steps,
+              dataset=args.dataset,
+              summary_writer=summary_writer,
+              mode='segmentation',).run_loop()
 
 
 if __name__ == "__main__":
