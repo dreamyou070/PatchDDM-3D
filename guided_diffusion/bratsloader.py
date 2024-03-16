@@ -46,7 +46,7 @@ class BRATSDataset(torch.utils.data.Dataset):
         self.coord_cache = None   # field for caching the coordinates that we append ine very step
         self.directory = os.path.expanduser(directory)
         self.normalize = normalize or (lambda x: x)
-        self.test_flag=test_flag
+        self.test_flag=test_flag # when training, False
         if test_flag:
             self.seqtypes = ['t1.nii', 't1ce.nii', 't2.nii', 'flair.nii']
         else:
@@ -87,10 +87,14 @@ class BRATSDataset(torch.utils.data.Dataset):
         filedict = self.database_dict[self.mode][x]
         number = filedict['t1.nii'].split('/')[-2]
         for seqtype in self.seqtypes:
-            nib_img = nibabel.load(filedict[seqtype])
-            out.append(torch.tensor(nib_img.get_fdata()))
+            img_arr = nibabel.load(filedict[seqtype]).get_fdata()
+            img_torch = torch.tensor(img_arr)
+            print(f'img_torch (240,240) = {img_torch.shape}')
+            # img_torch = [240,240]
+            out.append(img_torch)
         out = torch.stack(out)
         out_dict = {}
+        # ------------------------------------------------------------------------------------------------ #
         if self.test_flag:
             path2 = './data/brats/test_labels/' + str(number) + '-label.nii.gz'
             seg = nibabel.load(path2)
@@ -105,6 +109,7 @@ class BRATSDataset(torch.utils.data.Dataset):
             else:
                 raise ValueError(f"cannot deal with data of shape {out.shape=}")
             label = seg[None, ...]
+        # ------------------------------------------------------------------------------------------------ #
         else:
             if len(out.shape) == 3: #2d
                 image = torch.zeros(4, 256, 256)
