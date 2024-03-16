@@ -1,22 +1,16 @@
-"""
-Train a diffusion model on images.
-"""
+""" Train a diffusion model on images """
 import sys
 import argparse
 import torch as th
 import torch.utils.tensorboard
 import random
-
 sys.path.append("../PatchDDM-3D")
 sys.path.append("")
 from guided_diffusion.bratsloader import BRATSDataset
 from guided_diffusion import dist_util, logger
 from guided_diffusion.resample import create_named_schedule_sampler
-from guided_diffusion.script_util import (
-    model_and_diffusion_defaults,
-    create_model_and_diffusion,
-    args_to_dict,
-    add_dict_to_argparser,)
+from guided_diffusion.script_util import (model_and_diffusion_defaults,create_model_and_diffusion,
+                                          args_to_dict,add_dict_to_argparser,)
 from guided_diffusion.train_util import TrainLoop
 from torch.utils.tensorboard import SummaryWriter
 import numpy as np
@@ -25,15 +19,16 @@ def main():
 
     print(f' step 1. argument checking')
     args = create_argparser().parse_args()
+    print(f' (1.1) seed')
     seed = args.seed
     th.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
+    print(f' (1.2) tensorboard')
     summary_writer = None
-    if args.use_tensorboard:
-        logdir = None
-        if args.tensorboard_path:
-            logdir = args.tensorboard_path
+    if args.use_tensorboard: # True
+        logdir = None # logdir = None
+        if args.tensorboard_path: logdir = args.tensorboard_path
         summary_writer = SummaryWriter(log_dir=logdir)
         summary_writer.add_text('config',
                                 '\n'.join([f'--{k}={repr(v)} <br/>' for k, v in vars(args).items()]))
@@ -44,8 +39,17 @@ def main():
     dist_util.setup_dist(devices=args.devices)
 
     print(f' step 2. creating model and diffusion...')
-    arguments = args_to_dict(args, model_and_diffusion_defaults().keys())
+    arguments = args_to_dict(args,
+                             model_and_diffusion_defaults().keys())
+
+
+
+
+
+
+
     model, diffusion = create_model_and_diffusion(**arguments)
+    """
     print("number of parameters: {:_}".format(np.array([np.array(p.shape).prod() for p in model.parameters()]).sum()))
     model.to(dist_util.dev([0, 1]) if len(args.devices) > 1 else dist_util.dev())  # allow for 2 devices
     schedule_sampler = create_named_schedule_sampler(args.schedule_sampler, diffusion,  maxt=1000)
@@ -94,6 +98,7 @@ def main():
         summary_writer=summary_writer,
         mode='segmentation',
     ).run_loop()
+    """
 
 
 def create_argparser():

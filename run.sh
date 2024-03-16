@@ -1,7 +1,7 @@
 # general settings
 GPU=0;            # set to 01 for using gpu 0 and 1
 SEED=0;           # randomness seed for sampling
-CHANNELS=29;      # number of model channels
+CHANNELS=29;      # number of model channels (So Much!)
 MODE='train';     # train vs sample
 DATA_MODE="train" # train, test, validation data
 MODEL='patchddm'; #'patchddm', 'fullres', 'halfres'
@@ -17,8 +17,8 @@ if [[ $MODEL == 'patchddm' ]]; then
   echo "PATCHDDM";
   IN_CHANNELS=8; # concat
   CONCAT_COORDS=True;
-  IMAGE_SIZE_TRAIN=128;
-  IMAGE_SIZE_SAMPLE=256;
+  IMAGE_SIZE_TRAIN=128;               # 128 train
+  IMAGE_SIZE_SAMPLE=256;              # sampling with 256
   HALF_RES_CROP_TRAIN=True;
 elif [[ $MODEL == 'fullres' ]]; then
   echo "FULLRES";
