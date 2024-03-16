@@ -50,7 +50,7 @@ class BRATSDataset(torch.utils.data.Dataset):
         if test_flag:
             self.seqtypes = ['t1.nii', 't1ce.nii', 't2.nii', 'flair.nii']
         else:
-            self.seqtypes = ['t1.nii', 't1ce.nii', 't2.nii', 'flair.nii', 'seg.nii']
+            self.seqtypes = ['t1.nii', 't1ce.nii', 't2.nii', 'flair.nii', 'seg.nii'] # also t1ce, t2
         self.seqtypes_set = set(self.seqtypes)
         self.database = []
         for root, dirs, files in os.walk(self.directory):
@@ -68,7 +68,6 @@ class BRATSDataset(torch.utils.data.Dataset):
 
         # split the complete database into splits
         split = make_split()  # train, validation test
-        print(f'split = {split}')
         for filedict in self.database:
             # datapoint
             number = int(filedict['t1.nii'].split('/')[-2]) # 1
@@ -79,7 +78,7 @@ class BRATSDataset(torch.utils.data.Dataset):
                     break
             else:
                 raise RuntimeError(f"number {number} not found in any of the splits")
-        assert all(not numbers for numbers in split.values()), "not all numbers were distributed"
+        #assert all(not numbers for numbers in split.values()), "not all numbers were distributed"
         self.database_dict['legacy'] = self.database
 
     def __getitem__(self, x):

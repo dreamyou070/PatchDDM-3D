@@ -126,10 +126,7 @@ class TrainLoop:
         i = 0
         import time
         t = time.time()
-        while (
-            not self.lr_anneal_steps
-            or self.step + self.resume_step < self.lr_anneal_steps
-        ):
+        while ( not self.lr_anneal_steps or self.step + self.resume_step < self.lr_anneal_steps ):
             print(f'last iteration duration: {(t_total := time.time() - t)}')
             t = time.time()
             if self.dataset in ['brats', 'brats3d']:

@@ -69,7 +69,7 @@ def main():
                                          batch_size=args.batch_size,
                                          num_workers=args.num_workers,
                                          shuffle=True)
-    logger.log("training...")
+    print(f' step 4. training...')
     TrainLoop(
         model=model,
         diffusion=diffusion,
