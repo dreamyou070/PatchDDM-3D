@@ -82,7 +82,7 @@ class BRATSDataset(torch.utils.data.Dataset):
         self.database_dict['legacy'] = self.database
 
     def __getitem__(self, x):
-        # self.mode
+        # ------------------------------------------------------------------------------------------------ #
         out = []
         filedict = self.database_dict[self.mode][x]
         number = filedict['t1.nii'].split('/')[-2]
@@ -91,8 +91,9 @@ class BRATSDataset(torch.utils.data.Dataset):
             img_torch = torch.tensor(img_arr) # (240,240, 155)
             # img_torch = [240,240]
             out.append(img_torch)
-        out = torch.stack(out)
-        print(f' stacked (5,240,240,155) = {out.shape}')
+        out = torch.stack(out) # [5,240,240,155]
+        # ------------------------------------------------------------------------------------------------ #
+
         out_dict = {}
         # ------------------------------------------------------------------------------------------------ #
         if self.test_flag:
@@ -116,16 +117,23 @@ class BRATSDataset(torch.utils.data.Dataset):
                 image[:, 8:-8, 8:-8] = out[:-1, ...]  #pad to a size of (256,256)
                 seg = torch.zeros(1, 256, 256)
                 seg[:, 8:-8, 8:-8] = out[-1:, ...]  #pad to a size of (256,256)
+            # -------------------------------------------------------------------------------------------- #
             elif len(out.shape) == 4: #3d
+                # input  = [4,256,256,256]
+                # output = [1,256,256,256]
                 image = torch.zeros(4, 256, 256, 256)
-                image[:, 8:-8, 8:-8, 50:-51] = out[:-1, ...]  #pad to a size of (256,256)
+                image[:, 8:-8, 8:-8, 50:-51] = out[:-1, ...]  #pad to a size of (256,256) # except segment
                 seg = torch.zeros(1, 256, 256, 256)
                 seg[:, 8:-8, 8:-8, 50:-51] = out[-1:, ...]  #pad to a size of (256,256)
             else:
                 raise ValueError(f"cannot deal with data of shape {out.shape=}")
+            # -------------------------------------------------------------------------------------------- #
+            # segmentation label
             label = seg
 
+        # -------------------------------------------------------------------------------------------- #
         # normalization
+        print(f'max value of image = {image.max()}')
         image = self.normalize(image)
 
         weak_label = int(label.max() > 0)
