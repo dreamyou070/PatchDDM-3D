@@ -136,9 +136,9 @@ class BRATSDataset(torch.utils.data.Dataset):
         image = self.normalize(image)
 
         # -------------------------------------------------------------------------------------------- #
-        # weak_label = True or False
+        # weak_label = True or False (label = 0,1,2,4)
         weak_label = int(label.max() > 0)
-        print(f'weak_label (if True, anomal sample) = {weak_label}')
+        print(f'weak_label (if True, anomal sample) = {weak_label} | label.max() = {label.max()}')
 
         # normalized coordinates
         if self.concat_coords:
