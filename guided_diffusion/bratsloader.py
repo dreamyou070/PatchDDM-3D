@@ -134,7 +134,6 @@ class BRATSDataset(torch.utils.data.Dataset):
         # -------------------------------------------------------------------------------------------- #
         # normalization (2x-1)
         image = self.normalize(image)
-        print(f'image [4,256,256,256] = {image.shape}')
 
         # -------------------------------------------------------------------------------------------- #
         # weak_label = True or False (label = 0,1,2,4) -> If anomal, 1 else 0
@@ -148,10 +147,7 @@ class BRATSDataset(torch.utils.data.Dataset):
                 self.coord_cache = torch.stack(torch.meshgrid(dim * [torch.linspace(-1, 1, 256)], indexing='ij'), dim=0)
             # self.coord_cache = [3,256,256,256]
             image = torch.cat([image, self.coord_cache], dim=0) # [4,256,256,256] -> [2,5,256,256,256]
-            print(f'image (7, 256,256,256) = {image.shape}')
-
         # half resolution, temporary
-        print(f'self.half_resolution = {self.half_resolution}')
         if self.half_resolution:
             if len(image.shape) == 4:
                 image = image[:, ::2, ::2, ::2]
@@ -161,9 +157,14 @@ class BRATSDataset(torch.utils.data.Dataset):
                 label = label[:, ::2, ::2]
             else:
                 raise ValueError(f"cannot deal with data of shape {out.shape=}")
+
+        # --------------------------------------------------------------------------------------------------
         # half crop: crop to a 128x128[x128] image,
+        print(f'self.random_half_crop = {self.random_half_crop}')
         if self.random_half_crop:
+
             shape = (len(image.shape)-1,)
+            print(f'shape (3) = {shape}')
             first_coords = np.random.randint(0, 32+1, shape) + np.random.randint(0, 64+32+1, shape)
             index = tuple([slice(None), *(slice(f, f+128) for f in first_coords)])
             image = image[index]
@@ -171,9 +172,11 @@ class BRATSDataset(torch.utils.data.Dataset):
 
         if self.num_classes == 1:  # merge all in to one class
             label = (label > 0).float()
+
         elif self.num_classes == 4:  # use separate channels for each class (0=bg)
             new_label = label == torch.tensor([0, 1, 2, 4])[(slice(None), *(len(label.shape)-1)*(None,))]
             label = new_label.float()
+
         else:
             raise ValueError(f'{self.num_classes=} should be in 1 or 4')
 
