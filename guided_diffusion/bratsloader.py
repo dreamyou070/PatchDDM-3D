@@ -135,7 +135,7 @@ class BRATSDataset(torch.utils.data.Dataset):
         # normalization
         print(f'max value of image = {image.max()}')
         image = self.normalize(image)
-
+        print(f'max value after normalize image = {image.max()}')
         weak_label = int(label.max() > 0)
 
         # normalized coordinates
