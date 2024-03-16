@@ -1049,20 +1049,9 @@ class GaussianDiffusion:
 
 
    # def training_losses(self, model, x_start, t, model_kwargs=None, noise=None):
-    def training_losses(self, model,  x_start, t, classifier=None, model_kwargs=None, noise=None, labels=None, mode='default'):
-        """
-        Compute training losses for a single timestep.
-        :param model: the model to evaluate loss on.
-        :param x_start: the [N x C x ...] tensor of inputs.
-        :param t: a batch of timestep indices.
-        :param model_kwargs: if not None, a dict of extra keyword arguments to
-            pass to the model. This can be used for conditioning.
-        :param noise: if specified, the specific Gaussian noise to try to remove.
-        :param labels: must be specified for mode='segmentation'
-        :param mode:  can be default (image generation), segmentation
-        :return: a dict with the key "loss" containing a tensor of shape [N].
-                 Some mean or variance settings may also have other keys.
-        """
+    def training_losses(self, model,  x_start, t, classifier=None, model_kwargs=None, noise=None,
+                        labels=None, mode='default'):
+
         if model_kwargs is None:
             model_kwargs = {}
 
@@ -1070,7 +1059,6 @@ class GaussianDiffusion:
             if noise is None:
                 noise = th.randn_like(x_start)
             x_t = self.q_sample(x_start, t, noise=noise)
-
 
         elif mode == 'segmentation':
             # Here
@@ -1085,25 +1073,24 @@ class GaussianDiffusion:
             x_t = x_t.float()
         else:
             raise ValueError(f'invalid mode {mode=}, needs to be "default" or "segmentation"')
-
         terms = {}
 
         if self.loss_type == LossType.KL or self.loss_type == LossType.RESCALED_KL:
-            terms["loss"] = self._vb_terms_bpd(
-                model=model,
-                x_start=x_start,
-                x_t=x_t,
-                t=t,
-                clip_denoised=False,
-                model_kwargs=model_kwargs,)["output"]
+            terms["loss"] = self._vb_terms_bpd(model=model,
+                                               x_start=x_start,
+                                               x_t=x_t,
+                                               t=t,
+                                               clip_denoised=False,
+                                               model_kwargs=model_kwargs,)["output"]
             if self.loss_type == LossType.RESCALED_KL:
                 terms["loss"] *= self.num_timesteps
 
         # --------------------------------------------------------------------------------------------------------
         elif self.loss_type == LossType.MSE or self.loss_type == LossType.RESCALED_MSE:
 
-            model_output = model(x_t, self._scale_timesteps(t), **model_kwargs)
-
+            model_output = model(x_t, # x_0 and noise label
+                                 self._scale_timesteps(t),
+                                 **model_kwargs)
             print(f'model var type = {self.model_var_type}')
             if self.model_var_type in [ModelVarType.LEARNED, ModelVarType.LEARNED_RANGE, ]:
                 B, C = x_t.shape[:2]
@@ -1127,14 +1114,9 @@ class GaussianDiffusion:
                 print(f'Target is Noising ')
                 target = noise
             else:
-                target = {
-                    ModelMeanType.PREVIOUS_X: self.q_posterior_mean_variance(
-                        x_start=x_start, x_t=x_t, t=t
-                    )[0],
-                    ModelMeanType.START_X: x_start,
-                    ModelMeanType.EPSILON: noise,
-                }[self.model_mean_type]
-
+                target = {ModelMeanType.PREVIOUS_X: self.q_posterior_mean_variance(x_start=x_start, x_t=x_t, t=t)[0],
+                          ModelMeanType.START_X: x_start,
+                          ModelMeanType.EPSILON: noise,}[self.model_mean_type]
             if (target.abs() > 10).any():
                 print("ATTENTION target values greater than 10")
                 breakpoint()
