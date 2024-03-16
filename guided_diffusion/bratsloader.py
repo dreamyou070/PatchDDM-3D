@@ -151,6 +151,7 @@ class BRATSDataset(torch.utils.data.Dataset):
             print(f'image (7, 256,256,256) = {image.shape}')
 
         # half resolution, temporary
+        print(f'self.half_resolution = {self.half_resolution}')
         if self.half_resolution:
             if len(image.shape) == 4:
                 image = image[:, ::2, ::2, ::2]
