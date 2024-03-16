@@ -88,11 +88,11 @@ class BRATSDataset(torch.utils.data.Dataset):
         number = filedict['t1.nii'].split('/')[-2]
         for seqtype in self.seqtypes:
             img_arr = nibabel.load(filedict[seqtype]).get_fdata()
-            img_torch = torch.tensor(img_arr)
-            print(f'img_torch (240,240) = {img_torch.shape}')
+            img_torch = torch.tensor(img_arr) # (240,240, 155)
             # img_torch = [240,240]
             out.append(img_torch)
         out = torch.stack(out)
+        print(f' stacked (5,240,240,155) = {out.shape}')
         out_dict = {}
         # ------------------------------------------------------------------------------------------------ #
         if self.test_flag:
