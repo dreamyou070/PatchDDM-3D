@@ -39,10 +39,9 @@ class BRATSDataset(torch.utils.data.Dataset):
         self.normalize = normalize or (lambda x: x)
         self.test_flag=test_flag
         if test_flag:
-            self.seqtypes = ['t1', 't1ce', 't2', 'flair']
+            self.seqtypes = ['t1.nii', 't1ce.nii', 't2.nii', 'flair.nii']
         else:
-            self.seqtypes = ['t1', 't1ce', 't2', 'flair', 'seg']
-
+            self.seqtypes = ['t1.nii', 't1ce.nii', 't2.nii', 'flair.nii', 'seg.nii']
         self.seqtypes_set = set(self.seqtypes)
         self.database = []
         for root, dirs, files in os.walk(self.directory):
@@ -52,9 +51,7 @@ class BRATSDataset(torch.utils.data.Dataset):
                 datapoint = dict()
                 # extract all files as channels
                 for f in files:
-                    print(f'f = {f}')
                     seqtype = f.split('_')[3]
-                    print(f'seqtype = {seqtype}')
                     datapoint[seqtype] = os.path.join(root, f)
                 assert set(datapoint.keys()) == self.seqtypes_set, \
                     f'datapoint is incomplete, keys are {datapoint.keys()}'
