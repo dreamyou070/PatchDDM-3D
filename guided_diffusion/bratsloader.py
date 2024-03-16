@@ -136,14 +136,16 @@ class BRATSDataset(torch.utils.data.Dataset):
         image = self.normalize(image)
 
         # -------------------------------------------------------------------------------------------- #
-        # weak_label = True or False (label = 0,1,2,4)
+        # weak_label = True or False (label = 0,1,2,4) -> If anomal, 1 else 0
         weak_label = int(label.max() > 0)
-        print(f'weak_label (if True, anomal sample) = {weak_label} | label.max() = {label.max()}')
 
         # normalized coordinates
         if self.concat_coords:
+            # -------------------------------------------------------------------------------------------- #
+            print(f' concat with coordinate')
             if self.coord_cache is None:
                 dim = len(image.shape) - 1  # 2d or 3d
+                print(f' dim = 3 = {dim}')
                 self.coord_cache = torch.stack(torch.meshgrid(dim * [torch.linspace(-1, 1, 256)], indexing='ij'), dim=0)
             image = torch.cat([image, self.coord_cache], dim=0)
 
