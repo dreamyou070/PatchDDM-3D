@@ -14,6 +14,7 @@ RUN_DIR="MonXX_HH-MM-SS_HOSTNAME"; # tensorboard dir to be set for the evaluatio
 
 # detailed settings (no need to change for reproducing)
 if [[ $MODEL == 'patchddm' ]]; then
+  # Here
   echo "PATCHDDM";
   IN_CHANNELS=8; # concat
   CONCAT_COORDS=True;
@@ -65,7 +66,7 @@ COMMON="
 --decoder_device_thresh=15
 "
 TRAIN="
---data_dir=~/datasets/BRATS2020_nifti3d/train
+--data_dir=/home/dreamyou070/MyData/anomaly_detection/medical/brain/BraTS2020_Segmentation_MICCAI/train
 --image_size=${IMAGE_SIZE_TRAIN}
 --half_res_crop=${HALF_RES_CROP_TRAIN}
 --use_fp16=True

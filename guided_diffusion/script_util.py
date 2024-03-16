@@ -123,6 +123,29 @@ def create_model_and_diffusion(
     mode,
 ):
     print('timestepresp1',timestep_respacing )
+    # channels do    match: ch= 116, ich= 116, level=6, i=0
+    #  channels do    match: ch= 116, ich= 116, level=6, i=1
+    #  channels do    match: ch= 116, ich= 116, level=6, i=2
+    #  channels do    match: ch= 116, ich= 116, level=5, i=0
+    #  channels do    match: ch= 116, ich= 116, level=5, i=1
+    #  channels do    match: ch= 116, ich= 116, level=5, i=2
+    #  channels do    match: ch= 116, ich= 116, level=4, i=0
+    #  channels do    match: ch= 116, ich= 116, level=4, i=1
+    #  channels do    match: ch= 116, ich= 116, level=4, i=2
+    #  channels do    match: ch= 116, ich= 116, level=3, i=0
+    #  channels do    match: ch= 116, ich= 116, level=3, i=1
+    #  channels do    match: ch= 116, ich= 116, level=3, i=2
+    #  channels do    match: ch= 116, ich= 116, level=2, i=0
+    #  channels do    match: ch= 116, ich= 116, level=2, i=1
+    #  channels do    match: ch=  87, ich=  87, level=2, i=2
+    #  channels do    match: ch=  87, ich=  87, level=1, i=0
+    #  channels do    match: ch=  87, ich=  87, level=1, i=1
+    #  channels do    match: ch=  29, ich=  29, level=1, i=2
+    #  channels do    match: ch=  29, ich=  29, level=0, i=0
+    #  channels do    match: ch=  29, ich=  29, level=0, i=1
+    #  channels do    match: ch=  29, ich=  29, level=0, i=2
+
+    """ Unet Model """
     model = create_model(
         image_size,
         num_channels,
@@ -150,8 +173,8 @@ def create_model_and_diffusion(
         additive_skips=additive_skips,
         decoder_device_thresh=decoder_device_thresh,
     )
-    diffusion = create_gaussian_diffusion(
-        steps=diffusion_steps,
+    """ Diffusion Inferer """
+    diffusion = create_gaussian_diffusion(steps=diffusion_steps,
         learn_sigma=learn_sigma,
         noise_schedule=noise_schedule,
         use_kl=use_kl,
@@ -191,6 +214,7 @@ def create_model(
     additive_skips=False,
     decoder_device_thresh=0,
 ):
+    """ create Unet Model """
     if not channel_mult:
         if image_size == 512:
             channel_mult = (1, 1, 2, 2, 4, 4)
@@ -203,19 +227,20 @@ def create_model(
         else:
             raise ValueError(f"unsupported image size: {image_size}")
     else:
+        ######################################
         if isinstance(channel_mult, str):
             #channel_mult = tuple(int(ch_mult) for ch_mult in channel_mult.split(","))
             from ast import literal_eval
-            channel_mult = literal_eval(channel_mult)
+            channel_mult = literal_eval(channel_mult) # 1,3,4,4,4,4,4
         elif isinstance(channel_mult, tuple):  # do nothing
             pass
         else:
             raise ValueError(f"value for {channel_mult=} not supported")
-
-
     attention_ds = []
     if attention_resolutions:
         for res in attention_resolutions.split(","):
+            # 16
+            # 128 / 16 = 8
             attention_ds.append(image_size // int(res))
         
     #if dataset=='brats':
@@ -225,7 +250,6 @@ def create_model(
     #print('numberinchannels', number_in_channels)
     if out_channels == 0:
         out_channels =(2*in_channels if learn_sigma else in_channels)
-
 
     return UNetModel(
         image_size=image_size,

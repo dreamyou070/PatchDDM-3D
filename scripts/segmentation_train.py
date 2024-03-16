@@ -39,20 +39,13 @@ def main():
     dist_util.setup_dist(devices=args.devices)
 
     print(f' step 2. creating model and diffusion...')
-    arguments = args_to_dict(args,
-                             model_and_diffusion_defaults().keys())
-
-
-
-
-
-
-
-    model, diffusion = create_model_and_diffusion(**arguments)
-    """
+    arguments = args_to_dict(args, model_and_diffusion_defaults().keys())
+    model, diffusion = create_model_and_diffusion(**arguments) # unet, inferer
     print("number of parameters: {:_}".format(np.array([np.array(p.shape).prod() for p in model.parameters()]).sum()))
     model.to(dist_util.dev([0, 1]) if len(args.devices) > 1 else dist_util.dev())  # allow for 2 devices
-    schedule_sampler = create_named_schedule_sampler(args.schedule_sampler, diffusion,  maxt=1000)
+    schedule_sampler = create_named_schedule_sampler(args.schedule_sampler,
+                                                     diffusion,
+                                                     maxt=1000)
 
     print(f' step 3. data loader')
     if args.dataset == 'brats':
@@ -62,18 +55,25 @@ def main():
                                          num_workers=args.num_workers,
                                          shuffle=True)
     elif args.dataset == 'brats3d':
+        print(f'args.dataset = {args.dataset}')
         assert args.image_size in [128, 256]
-        ds = BRATSDataset(args.data_dir, test_flag=False, 
-                          normalize=(lambda x: 2*x - 1) if args.renormalize else None,
+        ds = BRATSDataset(args.data_dir,
+                          test_flag=False,
+                          normalize=(lambda x: 2 * x - 1) if args.renormalize else None,
                           mode='train',
                           half_resolution=(args.image_size == 128) and not args.half_res_crop,
                           random_half_crop=(args.image_size == 128) and args.half_res_crop,
                           concat_coords=args.concat_coords,
-                          num_classes=args.out_channels,)
+                          num_classes=args.out_channels, )
         datal = th.utils.data.DataLoader(ds,
                                          batch_size=args.batch_size,
                                          num_workers=args.num_workers,
                                          shuffle=True)
+    """
+    
+
+    
+    
 
     logger.log("training...")
     TrainLoop(
