@@ -132,11 +132,13 @@ class BRATSDataset(torch.utils.data.Dataset):
             label = seg
 
         # -------------------------------------------------------------------------------------------- #
-        # normalization
-        print(f'max value of image = {image.max()}')
+        # normalization (2x-1)
         image = self.normalize(image)
-        print(f'max value after normalize image = {image.max()}')
+
+        # -------------------------------------------------------------------------------------------- #
+        # weak_label = True or False
         weak_label = int(label.max() > 0)
+        print(f'weak_label (if True, anomal sample) = {weak_label}')
 
         # normalized coordinates
         if self.concat_coords:
