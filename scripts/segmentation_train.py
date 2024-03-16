@@ -91,7 +91,7 @@ def main():
         lr_anneal_steps=args.lr_anneal_steps,
         dataset=args.dataset,
         summary_writer=summary_writer,
-        mode='segmentation',
+        mode='segmentation', # only segmentation
     ).run_loop()
 
 def create_argparser():

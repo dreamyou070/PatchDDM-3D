@@ -143,8 +143,7 @@ class TrainLoop:
 
             # ------------------------------------------------------------------------------------ #
             # only use the first few channels as defined by self.in_channels
-            img_channel = batch.shape[1]
-            print(f'img_channel (7) = {img_channel} | self.in_channels (8) = {self.in_channels}')
+            img_channel = batch.shape[1] # 7
             if batch.shape[1] > self.in_channels:
                 batch = batch[:, :self.in_channels, ...]
             t_fwd = time.time()
@@ -152,10 +151,16 @@ class TrainLoop:
 
             info = dict()
             if self.mode == 'segmentation':
-                lossmse, sample = self.run_step(batch, cond=dict(), label=label, info=info)
+                # ----------------------------------------------------------------------------
+                lossmse, sample = self.run_step(batch,
+                                                cond=dict(),
+                                                label=label,
+                                                info=info)
             else:
                 lossmse, sample = self.run_step(batch, cond)
             print(f'time for step: {(t_fwd := time.time()-t_fwd)}')
+
+
             if self.summary_writer is not None:
                 self.summary_writer.add_scalar('time/load', t_load, global_step=self.step + self.resume_step)
                 self.summary_writer.add_scalar('time/fwd', t_fwd, global_step=self.step + self.resume_step)
@@ -177,8 +182,16 @@ class TrainLoop:
         if (self.step - 1) % self.save_interval != 0:
             self.save()
 
-    def run_step(self, batch, cond, label=None, info=dict()):
+    def run_step(self,
+                 batch,
+                 cond,
+                 label=None,
+                 info=dict()):
+
+        # ------------------------------------------------------------------------------------------ #
         lossmse,  sample = self.forward_backward(batch, cond, label)
+
+
         if self.use_fp16:
             self.grad_scaler.unscale_(self.opt) # check self.grad_scaler._per_optimizer_states
 
@@ -213,11 +226,16 @@ class TrainLoop:
             p.grad = None
         for i in range(0, batch.shape[0], self.microbatch):
             micro = batch[i : i + self.microbatch].to(dist_util.dev())
+            print(f'micro (1,7,256,256,256) = {micro.shape}')
             if label is not None:
                 micro_label = label[i : i + self.microbatch].to(dist_util.dev())
+                print(f'micro_label (1,1,256,256,256) = {micro_label.shape}')
             else:
                 micro_label = None
+
+            # ---------------------------------------------------------------------------------------
             # downsample if specified image_size is different from actual image size
+            print(f'self.image_size (128) = {self.image_size}')
             if self.image_size == micro.shape[2]:
                 pass
             elif self.image_size == micro.shape[2] // 2:
