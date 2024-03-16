@@ -61,20 +61,14 @@ def main():
                           test_flag=False,
                           normalize=(lambda x: 2 * x - 1) if args.renormalize else None,
                           mode='train',
-                          half_resolution=(args.image_size == 128) and not args.half_res_crop,
-                          random_half_crop=(args.image_size == 128) and args.half_res_crop,
+                          half_resolution=(args.image_size == 128) and not args.half_res_crop, # No
+                          random_half_crop=(args.image_size == 128) and args.half_res_crop,    # True
                           concat_coords=args.concat_coords,
                           num_classes=args.out_channels, )
         datal = th.utils.data.DataLoader(ds,
                                          batch_size=args.batch_size,
                                          num_workers=args.num_workers,
                                          shuffle=True)
-    """
-    
-
-    
-    
-
     logger.log("training...")
     TrainLoop(
         model=model,
@@ -98,8 +92,6 @@ def main():
         summary_writer=summary_writer,
         mode='segmentation',
     ).run_loop()
-    """
-
 
 def create_argparser():
     defaults = dict(

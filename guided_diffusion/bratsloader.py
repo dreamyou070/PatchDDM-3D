@@ -9,24 +9,33 @@ import nibabel
 
 class BRATSDataset(torch.utils.data.Dataset):
     def __init__(self, directory, test_flag=False, normalize=None, mode='train',
-                 half_resolution=False, random_half_crop=False, concat_coords=False, num_classes=1):
+                 half_resolution=False,
+                 random_half_crop=False, concat_coords=False, num_classes=1):
         '''
         directory is expected to contain some folder structure:
-                  if some subfolder contains only files, all of these
+         if some subfolder contains only files, all of these
                   files are assumed to have a name like
                   brats_train_NNN_XXX_123_w.nii.gz
+                  NNN is number
                   where XXX is one of t1, t1ce, t2, flair, seg
                   we assume these five files belong to the same image
                   seg is supposed to contain the segmentation
+
         half_resolution subsamples a 256^{2,3} image by a factor of 2
+
         random_half_crop crops a subvolume of 128^{2,3}, with a higher probability around the central region
-        concat_coords = True concatenates normalized coordinates
-        num_classes defines the number of classes (and therefore number of channels) of the labels, currently 1 or 4
+
+        concat_coords = True concatenates normalized coordinates -> concatenate normalized coordinated
+        num_classes defines the number of classes (and therefore number of channels) of the labels, currently 1 or 4 # 1 = mask, 4 = image
         '''
         super().__init__()
         self.mode = mode
         self.database_dict = dict(train=[], validation=[], test=[])
-        assert self.mode in self.database_dict or self.mode == 'legacy', f"invalid mode argument {self.mode}"
+        assert self.mode in self.database_dict or \
+               self.mode == 'legacy', f"invalid mode argument {self.mode}"
+
+        # ------------------------------------------------------------------------------------------------------------------------------------------------
+        # what is half_resolution ?
         if half_resolution and random_half_crop:
             raise RuntimeError(f"you probably don't want {half_resolution=} AND {random_half_crop=}")
         self.half_resolution = half_resolution
@@ -74,6 +83,7 @@ class BRATSDataset(torch.utils.data.Dataset):
         self.database_dict['legacy'] = self.database
 
     def __getitem__(self, x):
+        # self.mode
         out = []
         filedict = self.database_dict[self.mode][x]
         number = filedict['t1'].split('/')[-2]

@@ -66,7 +66,7 @@ COMMON="
 --decoder_device_thresh=15
 "
 TRAIN="
---data_dir=/home/dreamyou070/MyData/anomaly_detection/medical/brain/BraTS2020_Segmentation_MICCAI/train
+--data_dir=/home/dreamyou070/MyData/anomaly_detection/medical/brain/BraTS2020_Segmentation_MICCAI/MICCAI_BraTS2020_TrainingData
 --image_size=${IMAGE_SIZE_TRAIN}
 --half_res_crop=${HALF_RES_CROP_TRAIN}
 --use_fp16=True
