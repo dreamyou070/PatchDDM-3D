@@ -146,9 +146,9 @@ class BRATSDataset(torch.utils.data.Dataset):
             if self.coord_cache is None:
                 dim = len(image.shape) - 1  # 2d or 3d
                 self.coord_cache = torch.stack(torch.meshgrid(dim * [torch.linspace(-1, 1, 256)], indexing='ij'), dim=0)
-            # self.coord_cache = [1,256]
-            print(f'self.coord_cache = {self.coord_cache.shape}')
-            image = torch.cat([image, self.coord_cache], dim=0) # [5,256,256,256] -> [2,5,256,256,256]
+            # self.coord_cache = [3,256,256,256]
+            image = torch.cat([image, self.coord_cache], dim=0) # [4,256,256,256] -> [2,5,256,256,256]
+            print(f'image (7, 256,256,256) = {image.shape}')
 
         # half resolution, temporary
         if self.half_resolution:
