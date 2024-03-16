@@ -1070,11 +1070,15 @@ class GaussianDiffusion:
             if noise is None:
                 noise = th.randn_like(x_start)
             x_t = self.q_sample(x_start, t, noise=noise)
-        elif mode == 'segmentation':
-            image_channels = model.model.in_channels - model.model.out_channels
-            x_start = torch.cat([x_start, labels], dim=1)
-            res = labels
 
+
+        elif mode == 'segmentation':
+            # Here
+            image_channels = model.model.in_channels - model.model.out_channels # 7
+            print(f'image_channels (7) = {image_channels}')
+            x_start = torch.cat([x_start, labels], dim=1) # channel = 8
+            print(f'x_start (1,8,128,128,128) = {x_start.shape}')
+            res = labels
             # labels/noise are appended to the BACK of the MRI scans
             if noise is None:
                 noise = th.randn_like(res)
@@ -1089,7 +1093,6 @@ class GaussianDiffusion:
             raise ValueError(f'invalid mode {mode=}, needs to be "default" or "segmentation"')
 
         terms = {}
-
         if self.loss_type == LossType.KL or self.loss_type == LossType.RESCALED_KL:
             terms["loss"] = self._vb_terms_bpd(
                 model=model,

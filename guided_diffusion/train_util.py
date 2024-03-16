@@ -258,18 +258,11 @@ class TrainLoop:
             # ------------------------------------------------------------------------------------------------------
             # sampling
             # timestep, weights = 1
-            t, weights = self.schedule_sampler.sample(micro.shape[0],
-                                                      dist_util.dev())
-            print(f' timestep = {t}, weights (1) = {weights}')
+            t, weights = self.schedule_sampler.sample(micro.shape[0], dist_util.dev())
 
-            compute_losses = functools.partial(self.diffusion.training_losses,
-                                               self.model,
-                                               x_start=micro,
-                                               t=t,
-                                               model_kwargs=micro_cond,
-                                               labels=micro_label,
-                                               mode=self.mode,  # 'default' (image generation) or 'segmentation'
-                                                )
+            compute_losses = functools.partial(self.diffusion.training_losses, # main function
+                   # arguments
+                   self.model,  x_start=micro, t=t, model_kwargs=micro_cond,  labels=micro_label, mode=self.mode)
 
             with amp.autocast(enabled=self.use_fp16):
                 losses1 = compute_losses()
